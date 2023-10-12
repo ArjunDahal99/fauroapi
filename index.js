@@ -17,5 +17,5 @@ app.use(
 app.use("/api/", Imagerouter);
 
 app.listen(PORT, () => {
-  console.log(`server started at ${PORT}`);
+  console.log(`server started at ok ${PORT}`);
 });
