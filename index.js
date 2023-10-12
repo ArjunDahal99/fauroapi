@@ -14,7 +14,6 @@ app.use(
     methods: "*",
   })
 );
-
 app.use("/api/", Imagerouter);
 
 app.listen(PORT, () => {
