@@ -14,8 +14,7 @@ cloudinary.config({
 });
 
 export const generateImage = async (req, res) => {
-  const { prompt, negativeprompt, height, width, engineModel, email } =
-    await req.body;
+  const { prompt, height, width, engineModel, email } = await req.body;
 
   const userFromdb = await db.user.findFirst({
     where: {
@@ -32,7 +31,6 @@ export const generateImage = async (req, res) => {
     let output = await replicate.run(engineModel, {
       input: {
         prompt,
-        negative_prompt: negativeprompt,
         height,
         width,
       },
