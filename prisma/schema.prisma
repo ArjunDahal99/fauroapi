@@ -8,15 +8,28 @@ datasource db {
 }
 
 model Image {
-  id        Int    @id @default(autoincrement())
-  height    Int
-  width     Int
-  prompt    String
-  userId    String
-  LikeCount Int    @default(0)
-  url       String
-  User      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  Like      Like[]
+  id              Int               @id @default(autoincrement())
+  height          Int
+  width           Int
+  prompt          String
+  userId          String
+  LikeCount       Int               @default(0)
+  url             String
+  tags            String[]
+  created_At      DateTime          @default(now())
+  isFeatured      Boolean           @default(true)
+  User            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Like            Like[]
+  BackgroundColor BackgroundColor[]
+}
+
+model BackgroundColor {
+  id         Int    @id @default(autoincrement())
+  color      String
+  colorCode  String
+  percentage Float
+  imageId    Int
+  Image      Image  @relation(fields: [imageId], references: [id], onDelete: Cascade)
 }
 
 model Like {
@@ -28,12 +41,13 @@ model Like {
 }
 
 model User {
-  id       String  @id @unique
-  username String
-  email    String
-  about    String?
-  pp       String
-  token    Int     @default(100)
-  Image    Image[]
-  Like     Like[]
+  id         String   @id @unique
+  username   String
+  email      String
+  about      String?
+  pp         String
+  token      Int      @default(100)
+  created_At DateTime @default(now())
+  Image      Image[]
+  Like       Like[]
 }
