@@ -13,7 +13,6 @@ model Image {
   width           Int
   prompt          String
   userId          String
-  LikeCount       Int               @default(0)
   url             String
   tags            String[]
   created_At      DateTime          @default(now())
@@ -33,11 +32,12 @@ model BackgroundColor {
 }
 
 model Like {
-  id      Int    @id @default(autoincrement())
-  user_id String
-  imageId Int
-  Image   Image  @relation(fields: [imageId], references: [id], onDelete: Cascade)
-  User    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  id         Int      @id @default(autoincrement())
+  user_id    String
+  imageId    Int
+  Image      Image    @relation(fields: [imageId], references: [id], onDelete: Cascade)
+  User       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  created_At DateTime @default(now())
 }
 
 model User {

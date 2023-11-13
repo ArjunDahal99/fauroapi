@@ -1,11 +1,9 @@
+
 import { PrismaClient } from "@prisma/client";
+const globalForPrisma = globalThis;
 
-let db;
+globalForPrisma.prisma = globalForPrisma.prisma || new PrismaClient();
 
-if (!global.__db) {
-  global.__db = new PrismaClient();
-}
 
-db = global.__db;
-
-export default db;
+const db = globalForPrisma.prisma
+export default db

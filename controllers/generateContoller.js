@@ -20,9 +20,6 @@ const apiKey = 'acc_e00fb21ec8b4b69';
 const apiSecret = '2bc6a4f3eaec6383a9b966d6a5f8ce0a';
 
 
-
-
-
 export const generateImage = async (req, res) =>
 {
   const { prompt, height, width, engineModel, email, isFeatured } = await req.body;
@@ -36,15 +33,10 @@ export const generateImage = async (req, res) =>
     return res.status(404).json({
       message: "Sign in First",
     });
-
-
-
-
   //generate image from replicate
   try
   {
-    var tagNames;
-    var colorData;
+
     let output = await replicate.run(engineModel, {
       input: {
         prompt,
@@ -53,57 +45,30 @@ export const generateImage = async (req, res) =>
       },
     });
 
-
     // get tags from imagga
-
     const imageUrl = output[0];
     const url = 'https://api.imagga.com/v2/tags?image_url=' + encodeURIComponent(imageUrl);
+    const response = await got(url, { username: apiKey, password: apiSecret });
+    const tagdData = await JSON.parse(response.body);
+    const tagsWithHighConfidence = tagdData.result.tags.filter((tag) => tag.confidence > 20).map((tag) => tag.tag.en);
+    const finaltagNames = await tagsWithHighConfidence.map((tagName) => tagName);
 
-    (async () =>
-    {
-      try
-      {
-        const response = await got(url, { username: apiKey, password: apiSecret });
-
-        const data = await JSON.parse(response.body);
-        const tagsWithHighConfidence = data.result.tags
-          .filter((tag) => tag.confidence > 20)
-          .map((tag) => tag.tag.en);
-        tagNames = await tagsWithHighConfidence.map((tagName) => tagName);
-
-
-      } catch (error)
-      {
-        console.log(error);
-      }
-    })();
     //get color data from the image
     const urlforColor = 'https://api.imagga.com/v2/colors?image_url=' + encodeURIComponent(imageUrl);
-    (async () =>
-    {
-      try
-      {
-        const response = await got(urlforColor, { username: apiKey, password: apiSecret });
-        const data = await JSON.parse(response.body);
-        const newData = await data.result.colors.background_colors;
-        colorData = await newData.map((i) => ({
-          color: i.closest_palette_color,
-          colorCode: i.html_code,
-          percentage: i.percent,
-        }));
-
-      } catch (error)
-      {
-        console.log(error);
-      }
-    })();
-
+    const responseforColor = await got(urlforColor, { username: apiKey, password: apiSecret });
+    const Colordata = await JSON.parse(responseforColor.body);
+    const newColorData = await Colordata.result.colors.background_colors;
+    console.log(newColorData)
+    const finalcolorData = await newColorData.map((i) => ({
+      color: i.closest_palette_color,
+      colorCode: i.html_code,
+      percentage: i.percent,
+    }));
 
     //finally upload to cloud and the cloudurl is saved to the database
 
     await cloudinary.uploader.upload(output[0]).then(async (result) =>
     {
-
       const image = await db.image.create({
         data: {
           height,
@@ -112,9 +77,9 @@ export const generateImage = async (req, res) =>
           userId: userFromdb.id,
           prompt,
           isFeatured,
-          tags: tagNames.map((t) => t),
+          tags: finaltagNames?.map((t) => t),
           BackgroundColor: {
-            create: colorData,
+            create: finalcolorData,
           },
         },
       });
@@ -131,6 +96,7 @@ export const generateImage = async (req, res) =>
     });
   } catch (error)
   {
-    console.log(error);
+    console.log(error)
+    res.json({ message: "Error" }).status(404)
   }
 };
