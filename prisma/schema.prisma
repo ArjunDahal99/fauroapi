@@ -18,7 +18,7 @@ model Image {
   created_At      DateTime          @default(now())
   isFeatured      Boolean           @default(true)
   BackgroundColor BackgroundColor[]
-  User            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdBy       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   Like            Like[]
 }
 
