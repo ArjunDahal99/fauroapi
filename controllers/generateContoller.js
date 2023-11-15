@@ -111,3 +111,27 @@ export const generateImage = async (req, res) =>
     res.json({ message: "Error" }).status(404)
   }
 };
+
+
+
+export const getAllImage = async (req, res) =>
+{
+
+  const images = await db.image.findMany({
+    where: {
+      isFeatured: true,
+    },
+    include: {
+      createdBy: true,
+      Like: true,
+      BackgroundColor: true,
+    },
+    orderBy: {
+      created_At: "desc"
+    }
+  })
+  console.log(images)
+
+  res.json(images).status(200)
+
+}

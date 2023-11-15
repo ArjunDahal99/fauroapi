@@ -17,9 +17,9 @@ model Image {
   tags            String[]
   created_At      DateTime          @default(now())
   isFeatured      Boolean           @default(true)
+  BackgroundColor BackgroundColor[]
   User            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   Like            Like[]
-  BackgroundColor BackgroundColor[]
 }
 
 model BackgroundColor {
@@ -35,9 +35,9 @@ model Like {
   id         Int      @id @default(autoincrement())
   user_id    String
   imageId    Int
+  created_At DateTime @default(now())
   Image      Image    @relation(fields: [imageId], references: [id], onDelete: Cascade)
   User       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  created_At DateTime @default(now())
 }
 
 model User {
