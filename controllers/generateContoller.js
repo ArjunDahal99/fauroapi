@@ -46,26 +46,37 @@ export const generateImage = async (req, res) =>
     });
 
     // get tags from imagga
+    let finalcolorData = [];
+    let finaltagNames = [];
     const imageUrl = output[0];
-    const url = 'https://api.imagga.com/v2/tags?image_url=' + encodeURIComponent(imageUrl);
-    const response = await got(url, { username: apiKey, password: apiSecret });
-    const tagdData = await JSON.parse(response.body);
-    const tagsWithHighConfidence = tagdData.result.tags.filter((tag) => tag.confidence > 20).map((tag) => tag.tag.en);
-    const finaltagNames = await tagsWithHighConfidence.map((tagName) => tagName);
 
-    //get color data from the image
-    const urlforColor = 'https://api.imagga.com/v2/colors?image_url=' + encodeURIComponent(imageUrl);
-    const responseforColor = await got(urlforColor, { username: apiKey, password: apiSecret });
-    const Colordata = await JSON.parse(responseforColor.body);
-    const newColorData = await Colordata.result.colors.background_colors;
-    console.log(newColorData)
-    const finalcolorData = await newColorData.map((i) => ({
-      color: i.closest_palette_color,
-      colorCode: i.html_code,
-      percentage: i.percent,
-    }));
 
-    //finally upload to cloud and the cloudurl is saved to the database
+    try
+    {
+      const url = 'https://api.imagga.com/v2/tags?image_url=' + encodeURIComponent(imageUrl);
+      const response = await got(url, { username: apiKey, password: apiSecret });
+      const tagdData = await JSON.parse(response.body);
+      const tagsWithHighConfidence = tagdData.result.tags.filter((tag) => tag.confidence > 20).map((tag) => tag.tag.en);
+      finaltagNames = await tagsWithHighConfidence.map((tagName) => tagName);
+
+      //get color data from the image
+      const urlforColor = 'https://api.imagga.com/v2/colors?image_url=' + encodeURIComponent(imageUrl);
+      const responseforColor = await got(urlforColor, { username: apiKey, password: apiSecret });
+      const Colordata = await JSON.parse(responseforColor.body);
+      const newColorData = await Colordata.result.colors.background_colors;
+      finalcolorData = await newColorData.map((i) => ({
+        color: i.closest_palette_color,
+        colorCode: i.html_code,
+        percentage: i.percent,
+      }));
+
+      //finally upload to cloud and the cloudurl is saved to the database
+      console.log(finalcolorData)
+      console.log(finaltagNames)
+    } catch (error)
+    {
+      console.log(" this is error")
+    }
 
     await cloudinary.uploader.upload(output[0]).then(async (result) =>
     {
